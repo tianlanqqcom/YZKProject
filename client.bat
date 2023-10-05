@@ -1,0 +1,1 @@
+ "E:\UnrealEngine\UE_5.2\UnrealEngine\Engine\Binaries\Win64\UnrealEditor.exe"  "%CD%\YZKProject.uproject" GameEntry 62.234.13.91:7777 -game -log -nosteam
