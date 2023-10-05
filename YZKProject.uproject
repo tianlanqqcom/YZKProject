@@ -34,6 +34,8 @@
 	"TargetPlatforms": [
 		"Android",
 		"HoloLens",
-		"Windows"
+		"Windows",
+		"Linux",
+		"LinuxArm64"
 	]
 }
