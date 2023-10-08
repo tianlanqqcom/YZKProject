@@ -3,6 +3,7 @@
 
 #include "YNFPPCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/Controller.h"
 #include <string>
 
 
@@ -50,6 +51,10 @@ AYNFPPCharacter::AYNFPPCharacter()
 
     // 所属玩家看不到常规（第三人称）全身网格体。
     GetMesh()->SetOwnerNoSee(true);
+
+    SetReplicates(true);
+    FPSMesh->SetIsReplicated(true);
+    // SetReplicateMovement(true);
 }
 
 void AYNFPPCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -95,6 +100,46 @@ void AYNFPPCharacter::BeginPlay()
 void AYNFPPCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    // 获取相机旋转角度
+    FRotator CameraRotation = GetControlRotation();
+
+    // 只更新自己正在控制的角色
+    if(GetLocalRole() == ROLE_Authority || GetLocalRole() == ROLE_AutonomousProxy)
+    {
+#if WITH_EDITOR
+        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, CameraRotation.ToString());
+#endif
+
+        // Pre-Process Pitch
+        double CameraPitch = CameraRotation.Pitch;
+        if (CameraPitch > 180.0)
+        {
+            CameraPitch -= 360.0;
+        }
+
+        // 限制俯仰角在+-70°之间
+        CameraPitch = FMath::Clamp(CameraPitch, -70, 70);
+
+        // Post Process Pitch
+        if (CameraPitch < 0)
+        {
+            CameraPitch += 360.0;
+        }
+
+        CameraRotation.Pitch = CameraPitch;
+
+        FRotator FPSMeshRotator(CameraPitch-RecordLastPitch,0,0);
+        RecordLastPitch = CameraPitch;
+
+        // 设置相机旋转角度
+        GetController()->SetControlRotation(CameraRotation);
+
+        // FPSCameraComponent->SetWorldRotation();
+
+        // FPSCameraComponent->AddLocalRotation(FPSMeshRotator);
+    }
+
 
     TimeAgainstLastFire += DeltaTime;
 

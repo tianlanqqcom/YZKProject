@@ -21,6 +21,8 @@ private:
     // 距离上次开火的间隔时间
     float TimeAgainstLastFire = 0.0f;
 
+    double RecordLastPitch = 0.0;
+
 public:
     // 为此角色的属性设置默认值
     AYNFPPCharacter();
