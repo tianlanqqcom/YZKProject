@@ -69,14 +69,25 @@ public:
     virtual float TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
+    FTimerHandle RespawnDelayHandle;
+
     // 当游戏开始或重生（Spawn）时被调用
     virtual void BeginPlay() override;
+
+    //当我们的Actor在游戏过程中被销毁时调用。
+    virtual void Destroyed() override;
+
+    //调用GameMode类以重新启动玩家角色。
+    void CallRestartPlayer();
 
     // 要生成的发射物类。
     UPROPERTY(EditAnywhere, Category = Projectile)
     TSubclassOf<class AYProjectile> ProjectileClass;
 
 public:
+    UFUNCTION(BlueprintCallable)
+    virtual void RespawnTimeDelay();
+
     // 每一帧都被调用
     virtual void Tick(float DeltaTime) override;
 

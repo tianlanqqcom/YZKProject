@@ -28,7 +28,6 @@ void AYNFPSGameModeBase::StartPlay()
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, ToString(ViewX, ViewY));
 #endif
-
 	
 }
 
