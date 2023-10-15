@@ -108,6 +108,12 @@ void AYProjectile::OnProjectileImpact(UPrimitiveComponent* HitComponent, AActor*
 	    return;
     }
 
+    if (auto PersonGetHit = Cast<AYNFPPCharacter>(OtherActor))
+    {
+        PersonGetHit->SetLastHitPerson(Firer);
+        PersonGetHit->SetCurrentHealth(PersonGetHit->GetCurrentHealth() - Damage);
+    }
+
     if (OtherActor)
     {
         UGameplayStatics::ApplyPointDamage(OtherActor, Damage, NormalImpulse, Hit, GetInstigator()->Controller, this, DamageType);
@@ -128,6 +134,13 @@ void AYProjectile::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCompo
     if (Cast<AYNFPPCharacter>(OtherActor) == Firer)
     {
         return;
+    }
+
+    auto PersonGetHit = Cast<AYNFPPCharacter>(OtherActor);
+    if(PersonGetHit)
+    {
+        PersonGetHit->SetLastHitPerson(Firer);
+        PersonGetHit->SetCurrentHealth(PersonGetHit->GetCurrentHealth() - Damage);
     }
 
     if (OtherActor)

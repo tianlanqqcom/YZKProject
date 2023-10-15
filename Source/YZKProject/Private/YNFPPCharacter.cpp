@@ -64,14 +64,36 @@ void AYNFPPCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& Out
 
 	//复制当前生命值。
 	DOREPLIFETIME(AYNFPPCharacter, HealthPoint);
+
+	DOREPLIFETIME(AYNFPPCharacter, Score);
+
+	DOREPLIFETIME(AYNFPPCharacter, LastHitPerson);
 }
 
 void AYNFPPCharacter::SetCurrentHealth(float healthValue)
 {
-	if (GetLocalRole() == ROLE_Authority)
+	// if (GetLocalRole() == ROLE_Authority)
 	{
 		HealthPoint = FMath::Clamp(healthValue, 0.f, HealthPoint);
 		OnHealthUpdate();
+	}
+}
+
+void AYNFPPCharacter::SetCurrentScore(int32 NewScore)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		this->Score = NewScore;
+		OnScoreUpdate();
+	}
+}
+
+void AYNFPPCharacter::SetLastHitPerson(AYNFPPCharacter* NewLastHitPerson)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		this->LastHitPerson = NewLastHitPerson;
+		OnLastHitPersonUpdate();
 	}
 }
 
@@ -116,23 +138,29 @@ void AYNFPPCharacter::CallRestartPlayer()
 	// 获得Pawn控制器的引用。
 	AController* CortollerRef = GetController();
 
-	//销毁玩家  
-	Destroy();
+	// 销毁玩家  
+	// Destroy();
 
 	//在世界中获得World和GameMode，以调用其重启玩家函数。
 	if (UWorld* World = GetWorld())
 	{
 		if (AYFPPRespawnGameMode* GameMode = Cast<AYFPPRespawnGameMode>(World->GetAuthGameMode()))
 		{
-			GameMode->RestartPlayer(CortollerRef);
+			GameMode->RestartPlayerByYZK(CortollerRef);
 		}
 	}
 }
 
 void AYNFPPCharacter::RespawnTimeDelay()
 {
-	SetCurrentHealth(1.0f);
+#if WITH_EDITOR
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, L"Call RespawnTimeDelay");
+#endif 
+	// SetCurrentHealth(1.0f);
+	HealthPoint = 1.0f;
+	bCharacterHasDied = false;
 	CallRestartPlayer();
+	GetWorld()->GetTimerManager().ClearTimer(this->RespawnDelayHandle);
 }
 
 // 每一帧都被调用
@@ -147,7 +175,7 @@ void AYNFPPCharacter::Tick(float DeltaTime)
 	if (GetLocalRole() == ROLE_Authority || GetLocalRole() == ROLE_AutonomousProxy)
 	{
 #if WITH_EDITOR
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, CameraRotation.ToString());
+		// GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, CameraRotation.ToString());
 #endif
 
 		// Pre-Process Pitch
@@ -185,6 +213,21 @@ void AYNFPPCharacter::Tick(float DeltaTime)
 	// StartFire();
 
 	TryFire();
+
+	// Debug
+	FRotator NowRotator;
+	FVector Unused;
+	GetActorEyesViewPoint(Unused, NowRotator);
+
+	FVector lastRotatorVec = RecordLastCameraRotator.Vector();
+	if(abs(lastRotatorVec.Y - NowRotator.Vector().Y) > 90.0)
+	{
+#if WITH_EDITOR
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(L"Now RotatorY: %lf, Last: %lf, bIsRota:%d",
+			lastRotatorVec.Y, RecordLastCameraRotator.Vector().Y, bIsRotating));
+#endif
+
+	}
 }
 
 // 被调用，将功能与输入绑定
@@ -306,7 +349,7 @@ void AYNFPPCharacter::OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Locati
 {
 	int32 ViewX, ViewY;
 	GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
-	if (bIsRotating && Location.X > (ViewX / 2))
+	if (bIsRotating && FingerIndex == ETouchIndex::Touch1 && Location.X > (ViewX / 2))
 	{
 		// 根据手指滑动的距离来旋转镜头
 		float DeltaX = Location.X - PreviousLocation.X;
@@ -368,9 +411,14 @@ void AYNFPPCharacter::OnHealthUpdate()
 
 		if (HealthPoint <= 0)
 		{
+			if(this->LastHitPerson && !bCharacterHasDied)
+			{
+				this->LastHitPerson->SetCurrentScore(this->LastHitPerson->Score + 1);
+			}
 			
 			// Controller->DisableInput(nullptr);
 			// CallRestartPlayer();
+			bCharacterHasDied = true;
 			GetWorld()->GetTimerManager().SetTimer(RespawnDelayHandle, this, &AYNFPPCharacter::RespawnTimeDelay, 3.0f, true);
 		}
 	}
@@ -381,3 +429,40 @@ void AYNFPPCharacter::OnHealthUpdate()
 	*/
 
 }
+
+void AYNFPPCharacter::OnScoreUpdate()
+{
+	//客户端特定的功能
+	if (IsLocallyControlled())
+	{
+		
+	}
+
+	//服务器特定的功能
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		
+	}
+
+	//在所有机器上都执行的函数。 
+	
+}
+
+void AYNFPPCharacter::OnLastHitPersonUpdate()
+{
+	//客户端特定的功能
+	if (IsLocallyControlled())
+	{
+
+	}
+
+	//服务器特定的功能
+	if (GetLocalRole() == ROLE_Authority)
+	{
+
+	}
+
+	//在所有机器上都执行的函数。 
+}
+
+

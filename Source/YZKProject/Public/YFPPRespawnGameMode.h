@@ -18,8 +18,11 @@ class YZKPROJECT_API AYFPPRespawnGameMode : public AGameMode
 public:
     FORCEINLINE const FOnPlayerDiedSignature& GetOnPlayerDied() const { return OnPlayerDied; }
 
-    //尝试生成玩家的Pawn。
+    // 尝试生成玩家的Pawn。
     virtual void RestartPlayer(AController* NewPlayer) override;
+
+    // 暂时弃用 - 新的重生方法
+    void RestartPlayerByYZK(AController* NewPlayer);
 
 protected:
     virtual void BeginPlay() override;

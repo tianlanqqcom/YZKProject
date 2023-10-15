@@ -10,11 +10,14 @@
 #include "YProjectile.h"
 #include "YNFPPCharacter.generated.h"
 
+
 UCLASS()
 class YZKPROJECT_API AYNFPPCharacter : public ACharacter
 {
 	GENERATED_BODY()
 private:
+    FRotator RecordLastCameraRotator;
+
     // 角色是否正在开火中
     bool bIsFiring = false;
 
@@ -23,7 +26,33 @@ private:
 
     double RecordLastPitch = 0.0;
 
+    bool bCharacterHasDied = false;
+
 public:
+    UPROPERTY(ReplicatedUsing = OnRep_Score)
+    int32 Score;
+
+    UFUNCTION()
+    void OnScoreUpdate();
+
+    UFUNCTION()
+    FORCEINLINE void OnRep_Score()
+    {
+        OnScoreUpdate();
+    }
+
+    UPROPERTY(ReplicatedUsing = OnRep_LastHitPerson)
+    AYNFPPCharacter* LastHitPerson;
+
+    UFUNCTION()
+    void OnLastHitPersonUpdate();
+
+    UFUNCTION()
+    FORCEINLINE void OnRep_LastHitPerson()
+    {
+        OnLastHitPersonUpdate();
+    }
+
     // 为此角色的属性设置默认值
     AYNFPPCharacter();
 
@@ -44,7 +73,7 @@ protected:
     /** RepNotify，用于同步对当前生命值所做的更改。*/
     UFUNCTION()
     void OnRep_CurrentHealth();
-
+     
     /** 响应要更新的生命值。修改后，立即在服务器上调用，并在客户端上调用以响应RepNotify*/
     void OnHealthUpdate();
 
@@ -60,9 +89,21 @@ public:
     UFUNCTION(BlueprintPure, Category = "Health")
     FORCEINLINE float GetCurrentHealth() const { return HealthPoint; }
 
+    UFUNCTION(BlueprintPure, Category = "GamePlay")
+    FORCEINLINE int32 GetCurrentScore() const { return Score; }
+
+    UFUNCTION(BlueprintPure, Category = "GamePlay")
+    FORCEINLINE AYNFPPCharacter* GetCurrentLastHitPerson() const { return LastHitPerson; }
+
     /** 当前生命值的存值函数。将此值的范围限定在0到MaxHealth之间，并调用OnHealthUpdate。仅在服务器上调用。*/
     UFUNCTION(BlueprintCallable, Category = "Health")
     void SetCurrentHealth(float healthValue);
+
+    UFUNCTION(BlueprintCallable, Category = "GamePlay")
+    void SetCurrentScore(int32 NewScore);
+
+    UFUNCTION(BlueprintCallable, Category = "GamePlay")
+    void SetLastHitPerson(AYNFPPCharacter* NewLastHitPerson);
 
     /** 承受伤害的事件。从APawn覆盖。*/
     UFUNCTION(BlueprintCallable, Category = "Health")
