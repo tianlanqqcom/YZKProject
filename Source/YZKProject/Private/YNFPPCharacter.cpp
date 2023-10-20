@@ -117,6 +117,9 @@ void AYNFPPCharacter::BeginPlay()
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
 #endif
 
+	int32 ViewX, ViewY;
+	GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
+	TouchProcesser = FPlayerTouchProcesser(ViewX, ViewY);
 }
 
 void AYNFPPCharacter::Destroyed()
@@ -325,7 +328,7 @@ void AYNFPPCharacter::Fire_Implementation()
 
 void AYNFPPCharacter::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location)
 {
-	int32 ViewX, ViewY;
+	/*int32 ViewX, ViewY;
 	GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
 
 #if WITH_EDITOR
@@ -338,27 +341,46 @@ void AYNFPPCharacter::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Loca
 		bIsRotating = true;
 		PreviousLocation = Location;
 	}
+	else
+	{
+		bIsRotating = false;
+	}*/
+
+	TouchProcesser.FingerPressed(FingerIndex, Location);
 }
 
 void AYNFPPCharacter::OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Location)
 {
-	bIsRotating = false;
+	// bIsRotating = false;
+	TouchProcesser.FingerRelease(FingerIndex, Location);
 }
 
 void AYNFPPCharacter::OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Location)
 {
-	int32 ViewX, ViewY;
-	GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
-	if (bIsRotating && FingerIndex == ETouchIndex::Touch1 && Location.X > (ViewX / 2))
-	{
-		// 根据手指滑动的距离来旋转镜头
-		float DeltaX = Location.X - PreviousLocation.X;
-		AddControllerYawInput(DeltaX * Sensitivity);
+	//int32 ViewX, ViewY;
+	//GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
+	//if (bIsRotating && (FingerIndex == ETouchIndex::Touch1 || FingerIndex == ETouchIndex::Touch2) && Location.X > (ViewX / 2))
+	//{
+	//	// 根据手指滑动的距离来旋转镜头
+	//	float DeltaX = Location.X - PreviousLocation.X;
+	//	AddControllerYawInput(DeltaX * Sensitivity);
 
-		float DeltaY = Location.Y - PreviousLocation.Y;
-		AddControllerPitchInput(DeltaY * Sensitivity);
+	//	float DeltaY = Location.Y - PreviousLocation.Y;
+	//	AddControllerPitchInput(DeltaY * Sensitivity);
+	//}
+	//PreviousLocation = Location;
+
+	FTouchResult Result = TouchProcesser.FingerMoved(FingerIndex, Location);
+
+	if(Result.DeltaX != 0.f)
+	{
+		AddControllerYawInput(Result.DeltaX * Sensitivity);
 	}
-	PreviousLocation = Location;
+
+	if (Result.DeltaY != 0.f)
+	{
+		AddControllerPitchInput(Result.DeltaY * Sensitivity);
+	}
 }
 
 void AYNFPPCharacter::StartFire()

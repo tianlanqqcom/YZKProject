@@ -8,6 +8,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/GameViewportClient.h"
 #include "YProjectile.h"
+
+#include  "PlayerTouchProcesser.h"
 #include "YNFPPCharacter.generated.h"
 
 
@@ -16,6 +18,8 @@ class YZKPROJECT_API AYNFPPCharacter : public ACharacter
 {
 	GENERATED_BODY()
 private:
+    FPlayerTouchProcesser TouchProcesser;
+
     FRotator RecordLastCameraRotator;
 
     // 角色是否正在开火中
@@ -27,6 +31,8 @@ private:
     double RecordLastPitch = 0.0;
 
     bool bCharacterHasDied = false;
+
+
 
 public:
     UPROPERTY(ReplicatedUsing = OnRep_Score)

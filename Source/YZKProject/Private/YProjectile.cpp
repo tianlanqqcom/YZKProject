@@ -55,7 +55,7 @@ AYProjectile::AYProjectile()
         ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
         ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
         // ProjectileMovementComponent->InitialSpeed = 3000.0f;
-        ProjectileMovementComponent->InitialSpeed = 300.0f;
+        ProjectileMovementComponent->InitialSpeed = 3000.0f;
         ProjectileMovementComponent->MaxSpeed = 3000.0f;
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;

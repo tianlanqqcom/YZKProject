@@ -62,7 +62,9 @@ void AYFPPRespawnGameMode::RestartPlayerByYZK(AController* NewPlayer)
 	if (NewPlayer->GetPawn() != nullptr)
 	{
 		// If we have an existing pawn, just use it's rotation
-		SpawnRotation = NewPlayer->GetPawn()->GetActorRotation();
+		// SpawnRotation = NewPlayer->GetPawn()->GetActorRotation();
+		NewPlayer->GetPawn()->SetActorLocation(SpawnPosition);
+		NewPlayer->GetPawn()->SetActorRotation(SpawnRotation);
 	}
 	else if (GetDefaultPawnClassForController(NewPlayer) != nullptr)
 	{
@@ -71,19 +73,31 @@ void AYFPPRespawnGameMode::RestartPlayerByYZK(AController* NewPlayer)
 		if (IsValid(NewPawn))
 		{
 			NewPlayer->SetPawn(NewPawn);
+			NewPlayer->GetPawn()->SetActorLocation(SpawnPosition);
+			NewPlayer->GetPawn()->SetActorRotation(SpawnRotation);
 		}
+		else
+		{
+			UE_LOG(LogGameMode, Warning, TEXT("RestartPlayerByYZK: Creating Character, but is not valid."));
+			return;
+		}
+	}
+	else
+	{
+		UE_LOG(LogGameMode, Warning, TEXT("RestartPlayerByYZK: Unable to create Character"));
+		return;
 	}
 
 	// Set Character rotation and transform.
 	// Set initial control rotation to starting rotation rotation
 	// NewPlayer->ClientSetRotation(NewPlayer->GetPawn()->GetActorRotation(), true);
-	NewPlayer->ClientSetLocation(SpawnPosition, SpawnRotation);
+	// NewPlayer->ClientSetLocation(SpawnPosition, SpawnRotation);
 
 	FRotator NewControllerRot = SpawnRotation;
 	NewControllerRot.Roll = 0.f;
 	NewPlayer->SetControlRotation(NewControllerRot);
 
-	SetPlayerDefaults(NewPlayer->GetPawn());
+	// SetPlayerDefaults(NewPlayer->GetPawn());
 }
 
 void AYFPPRespawnGameMode::PlayerDied(ACharacter* Character)
