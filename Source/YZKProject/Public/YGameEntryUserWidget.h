@@ -34,7 +34,7 @@ public:
 	int32 CreateRoom();
 
 	UFUNCTION(BlueprintCallable)
-	TArray<int32> FindRooms();
+	TArray<int32> FindRooms(bool& bIsNetSuccess);
 
 	UFUNCTION(BlueprintCallable)
 	FString JoinRoom(int32 TargetPort);

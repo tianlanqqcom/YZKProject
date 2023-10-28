@@ -127,7 +127,7 @@ int32 UYGameEntryUserWidget::CreateRoom()
         return 0;
     }
 
-    if (SetSocketTimeout(ClientSocket, 3))
+    if (SetSocketTimeout(ClientSocket, 1, 500))
     {
         return 0;
     }
@@ -161,7 +161,7 @@ int32 UYGameEntryUserWidget::CreateRoom()
     return strtol(RecvBuffer, &EndPtr, 10);
 }
 
-TArray<int32> UYGameEntryUserWidget::FindRooms()
+TArray<int32> UYGameEntryUserWidget::FindRooms(bool& bIsNetSuccess)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Call FindRooms"));
 	TArray<int32> Result;
@@ -169,11 +169,13 @@ TArray<int32> UYGameEntryUserWidget::FindRooms()
 	int ClientSocket = CreateClientSocket();
 	if (ClientSocket < 0)
 	{
+        bIsNetSuccess = false;
 		return Result;
 	}
 
-	if (SetSocketTimeout(ClientSocket, 3))
+	if (SetSocketTimeout(ClientSocket, 1,500))
 	{
+        bIsNetSuccess = false;
 		return Result;
 	}
 
@@ -188,6 +190,7 @@ TArray<int32> UYGameEntryUserWidget::FindRooms()
 	if (SendDataToServer(Message, ClientSocket, &ServerAddr, sizeof(ServerAddr)))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("FindRooms: Send Failed."));
+        bIsNetSuccess = false;
 		return Result;
 	}
 
@@ -197,6 +200,7 @@ TArray<int32> UYGameEntryUserWidget::FindRooms()
 	if (RecvFromServer(RecvBuffer, sizeof(RecvBuffer), ClientSocket, &ServerResponseAddr, &ServerResponseAddrSize))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("FindRooms: Recv Failed."));
+        bIsNetSuccess = false;
 		return Result;
 	}
 	CloseSocket(ClientSocket);
@@ -217,8 +221,9 @@ TArray<int32> UYGameEntryUserWidget::FindRooms()
 			break;
 		}
 	}
-	return Result;
 
+    bIsNetSuccess = true;
+	return Result;
 }
 
 FString UYGameEntryUserWidget::JoinRoom(int32 TargetPort)
