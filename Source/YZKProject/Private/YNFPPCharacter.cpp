@@ -56,6 +56,7 @@ AYNFPPCharacter::AYNFPPCharacter()
 	SetReplicates(true);
 	FPSMesh->SetIsReplicated(true);
 	// SetReplicateMovement(true);
+
 }
 
 void AYNFPPCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -68,6 +69,8 @@ void AYNFPPCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& Out
 	DOREPLIFETIME(AYNFPPCharacter, Score);
 
 	DOREPLIFETIME(AYNFPPCharacter, LastHitPerson);
+
+	DOREPLIFETIME(AYNFPPCharacter, Name);
 }
 
 void AYNFPPCharacter::SetCurrentHealth(float healthValue)
@@ -405,6 +408,11 @@ void AYNFPPCharacter::StopFire()
 	this->bIsFiring = false;
 }
 
+void AYNFPPCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+}
+
 void AYNFPPCharacter::OnRep_CurrentHealth()
 {
 	OnHealthUpdate();
@@ -485,6 +493,21 @@ void AYNFPPCharacter::OnLastHitPersonUpdate()
 	}
 
 	//在所有机器上都执行的函数。 
+}
+
+void AYNFPPCharacter::OnNameUpdate()
+{
+	//客户端特定的功能
+	if (IsLocallyControlled())
+	{
+
+	}
+
+	//服务器特定的功能
+	if (GetLocalRole() == ROLE_Authority)
+	{
+
+	}
 }
 
 

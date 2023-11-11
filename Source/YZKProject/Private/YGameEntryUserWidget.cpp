@@ -3,11 +3,6 @@
 
 #include "YGameEntryUserWidget.h"
 
-#include <iostream>
-#include <string>
-#include <Kismet/GameplayStatics.h>
-
-
 int UYGameEntryUserWidget::CreateClientSocket()
 {
 #if PLATFORM_WINDOWS

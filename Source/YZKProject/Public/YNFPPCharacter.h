@@ -13,6 +13,8 @@
 #include "YNFPPCharacter.generated.h"
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerStateChanged);
+
 UCLASS()
 class YZKPROJECT_API AYNFPPCharacter : public ACharacter
 {
@@ -59,11 +61,40 @@ public:
         OnLastHitPersonUpdate();
     }
 
+    UPROPERTY(ReplicatedUsing = OnRep_Name)
+    FString Name;
+
+    UFUNCTION(BlueprintPure)
+    FORCEINLINE FString GetCharacterName() const
+    {
+        return Name;
+    }
+
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE void SetCharacterName(const FString& NewName)
+    {
+        this->Name = NewName;
+        OnNameUpdate();
+    }
+
+    UFUNCTION()
+    void OnNameUpdate();
+
+    UFUNCTION()
+    FORCEINLINE void OnRep_Name()
+    {
+        OnNameUpdate();
+    }
+
     // 为此角色的属性设置默认值
     AYNFPPCharacter();
 
     /** 属性复制 */
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+    UPROPERTY(BlueprintCallable)
+    FOnPlayerStateChanged OnPlayerStateChanged;
+    virtual void OnRep_PlayerState() override;
 
 protected:
     // 开火最小间隔，蓝图可设置

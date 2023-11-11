@@ -21,9 +21,8 @@ typedef long long ssize_t;
 
 #include "YGameEntryUserWidget.generated.h"
 
-/**
- * 
- */
+
+
 UCLASS()
 class YZKPROJECT_API UYGameEntryUserWidget : public UUserWidget
 {
@@ -50,5 +49,4 @@ private:
 	static int SendDataToServer(const char* Message, int ClientFd, struct sockaddr_in* ServerAddr, int ServerAddrLen);
 
 	static int RecvFromServer(char* MessageBuffer, int BufferSize, int ClientFd, sockaddr_in* ServerResponseAddr, socklen_t* ServerResponseAddrLen);
-	
 };

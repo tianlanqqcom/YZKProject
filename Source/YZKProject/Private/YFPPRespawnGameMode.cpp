@@ -3,7 +3,9 @@
 
 #include "YFPPRespawnGameMode.h"
 #include "YNFPPCharacter.h"
+#include "YNFPSGameModeBase.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GameFramework/GameStateBase.h"
 
 void AYFPPRespawnGameMode::BeginPlay()
 {
@@ -14,12 +16,54 @@ void AYFPPRespawnGameMode::BeginPlay()
         GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, "Using AYFPPRespawnGameMode.");
 #endif
 
+	this->MaxPlayerCount = 3;
+
     //将我们的玩家已死亡委托绑定到GameMode的PlayerDied函数。
     if (!OnPlayerDied.IsBound())
     {
         OnPlayerDied.AddDynamic(this, &AYFPPRespawnGameMode::PlayerDied);
     }
 
+	UE_LOG(LogTemp, Warning, TEXT("Close Handel Registered."));
+	GetWorld()->GetTimerManager().SetTimer(CloseServerHandle, this, &AYFPPRespawnGameMode::CloseServerAndReturnToMain, 15.0f, true);
+
+}
+
+void AYFPPRespawnGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	// 获取当前关卡中的玩家数量
+	int32 RemainingPlayers = GetWorld()->GetGameState()->PlayerArray.Num();
+
+	if(RemainingPlayers >= MaxPlayerCount)
+	{
+		ErrorMessage = FString::Printf(TEXT("Too Much Players, Now Already has: %d"), RemainingPlayers);
+	}
+	else
+	{
+		Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	}
+
+}
+
+APlayerController* AYFPPRespawnGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	ClientOptionString = Options;
+	return Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
+}
+
+void AYFPPRespawnGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+}
+
+void AYFPPRespawnGameMode::CloseServerAndReturnToMain()
+{
+	if(GetWorld()->GetGameState()->PlayerArray.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Server is ready to close, Reason: No player exists."));
+		FPlatformMisc::RequestExit(true);
+	}
+	// GetWorld()->GetTimerManager().ClearTimer(CloseServerHandle);
 }
 
 void AYFPPRespawnGameMode::RestartPlayer(AController* NewPlayer)
