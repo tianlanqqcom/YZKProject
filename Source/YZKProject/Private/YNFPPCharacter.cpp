@@ -3,7 +3,7 @@
 
 #include "YNFPPCharacter.h"
 #include "Net/UnrealNetwork.h"
-#include "GameFramework/Controller.h"
+#include "GameFramework/PlayerController.h"
 #include <string>
 #include "YFPPRespawnGameMode.h"
 
@@ -121,8 +121,12 @@ void AYNFPPCharacter::BeginPlay()
 #endif
 
 	int32 ViewX, ViewY;
-	GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
-	TouchProcesser = FPlayerTouchProcesser(ViewX, ViewY);
+	APlayerController* MyController = GetWorld()->GetFirstPlayerController();
+	if(MyController)
+	{
+		MyController->GetViewportSize(ViewX, ViewY);
+		TouchProcesser = FPlayerTouchProcesser(ViewX, ViewY);
+	}
 }
 
 void AYNFPPCharacter::Destroyed()
@@ -142,7 +146,8 @@ void AYNFPPCharacter::Destroyed()
 void AYNFPPCharacter::CallRestartPlayer()
 {
 	// 获得Pawn控制器的引用。
-	AController* CortollerRef = GetController();
+	AController* ControllerRef = GetController();
+	bEnableUMGInput = true;
 
 	// 销毁玩家  
 	// Destroy();
@@ -152,9 +157,15 @@ void AYNFPPCharacter::CallRestartPlayer()
 	{
 		if (AYFPPRespawnGameMode* GameMode = Cast<AYFPPRespawnGameMode>(World->GetAuthGameMode()))
 		{
-			GameMode->RestartPlayerByYZK(CortollerRef);
+			GameMode->RestartPlayerByYZK(ControllerRef);
+		}
+
+		if(APlayerController* PController = Cast<APlayerController>(this->GetController()))
+		{
+			EnableInput(PController);
 		}
 	}
+
 }
 
 void AYNFPPCharacter::RespawnTimeDelay()
@@ -395,7 +406,7 @@ void AYNFPPCharacter::TryFire()
 {
 	if (this->bIsFiring)
 	{
-		if (TimeAgainstLastFire > MinTimeDistanceOfFire)
+		if (TimeAgainstLastFire > MinTimeDistanceOfFire && HealthPoint > 0.f)
 		{
 			Fire();
 			TimeAgainstLastFire = 0.0f;
@@ -452,6 +463,18 @@ void AYNFPPCharacter::OnHealthUpdate()
 			GetWorld()->GetTimerManager().SetTimer(RespawnDelayHandle, this, &AYNFPPCharacter::RespawnTimeDelay, 3.0f, true);
 		}
 	}
+
+	if(HealthPoint <= 0)
+	{
+		this->bIsFiring = false;
+		this->bEnableUMGInput = false;
+
+		if(APlayerController* PController = Cast<APlayerController>(this->GetController()))
+		{
+			DisableInput(PController);
+		}
+	}
+
 
 	//在所有机器上都执行的函数。 
 	/*

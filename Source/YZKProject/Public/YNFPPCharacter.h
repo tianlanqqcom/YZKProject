@@ -34,9 +34,17 @@ private:
 
     bool bCharacterHasDied = false;
 
-
+    bool bEnableUMGInput = true;
 
 public:
+
+
+    UFUNCTION(BlueprintPure)
+    FORCEINLINE bool IsEnableUMGInput() const
+    {
+        return bEnableUMGInput;
+    }
+
     UPROPERTY(ReplicatedUsing = OnRep_Score)
     int32 Score;
 
