@@ -34,10 +34,21 @@ private:
 
     bool bCharacterHasDied = false;
 
+    UPROPERTY(Replicated)
     bool bEnableUMGInput = true;
 
 public:
+    UFUNCTION(BlueprintImplementableEvent)
+	void ShowDieMenu();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void HideDieMenu();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void CallDisableInput();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void CallEnableInput();
 
     UFUNCTION(BlueprintPure)
     FORCEINLINE bool IsEnableUMGInput() const
@@ -156,6 +167,12 @@ public:
 
 protected:
     FTimerHandle RespawnDelayHandle;
+
+    FTimerHandle HideDieMenuDelayHandle;
+
+    FTimerHandle ServerReEnableInputHandle;
+
+    FTimerHandle ClientReEnableInputHandle;
 
     // 当游戏开始或重生（Spawn）时被调用
     virtual void BeginPlay() override;

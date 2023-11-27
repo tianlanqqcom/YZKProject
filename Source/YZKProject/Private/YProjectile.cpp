@@ -22,8 +22,8 @@ AYProjectile::AYProjectile()
     // Enable actor replicate.
     bReplicates = true;
 
-    // 3 秒后删除发射物。
-    InitialLifeSpan = 5.0f;
+    // 20 秒后删除发射物。
+    InitialLifeSpan = 20.0f;
 
     if (!RootComponent)
     {
@@ -60,7 +60,7 @@ AYProjectile::AYProjectile()
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;
         ProjectileMovementComponent->Bounciness = 0.3f;
-        ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
+        ProjectileMovementComponent->ProjectileGravityScale = 0.02f;
     }
 
     if (!ProjectileMeshComponent)

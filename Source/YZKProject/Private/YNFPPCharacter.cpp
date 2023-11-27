@@ -441,6 +441,10 @@ void AYNFPPCharacter::OnHealthUpdate()
 		{
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+
+			ShowDieMenu();
+			GetWorld()->GetTimerManager().SetTimer(HideDieMenuDelayHandle, this, &AYNFPPCharacter::HideDieMenu, 3.0f, true);
+			GetWorld()->GetTimerManager().SetTimer(ClientReEnableInputHandle, this, &AYNFPPCharacter::CallEnableInput, 3.0f, true);
 		}
 	}
 
@@ -456,11 +460,14 @@ void AYNFPPCharacter::OnHealthUpdate()
 			{
 				this->LastHitPerson->SetCurrentScore(this->LastHitPerson->Score + 1);
 			}
-			
+
+
 			// Controller->DisableInput(nullptr);
 			// CallRestartPlayer();
 			bCharacterHasDied = true;
 			GetWorld()->GetTimerManager().SetTimer(RespawnDelayHandle, this, &AYNFPPCharacter::RespawnTimeDelay, 3.0f, true);
+			GetWorld()->GetTimerManager().SetTimer(ServerReEnableInputHandle, this, &AYNFPPCharacter::CallEnableInput, 3.0f, true);
+		
 		}
 	}
 
@@ -469,10 +476,7 @@ void AYNFPPCharacter::OnHealthUpdate()
 		this->bIsFiring = false;
 		this->bEnableUMGInput = false;
 
-		if(APlayerController* PController = Cast<APlayerController>(this->GetController()))
-		{
-			DisableInput(PController);
-		}
+		CallDisableInput();
 	}
 
 
