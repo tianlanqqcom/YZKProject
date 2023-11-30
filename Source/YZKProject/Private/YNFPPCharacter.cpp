@@ -8,16 +8,6 @@
 #include "YFPPRespawnGameMode.h"
 
 
-FString TouchPosToString(int32 X, int32 Y)
-{
-	std::string s = "";
-	s += std::to_string(X);
-	s += " ";
-	s += std::to_string(Y);
-
-	return FString(s.c_str());
-}
-
 AYNFPPCharacter::AYNFPPCharacter()
 {
 	// 将此角色设置为每帧调用Tick()。  如果不需要此特性，可以关闭以提升性能。
@@ -63,7 +53,6 @@ void AYNFPPCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	//复制当前生命值。
 	DOREPLIFETIME(AYNFPPCharacter, HealthPoint);
 
 	DOREPLIFETIME(AYNFPPCharacter, Score);
@@ -75,11 +64,8 @@ void AYNFPPCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& Out
 
 void AYNFPPCharacter::SetCurrentHealth(float healthValue)
 {
-	// if (GetLocalRole() == ROLE_Authority)
-	{
-		HealthPoint = FMath::Clamp(healthValue, 0.f, HealthPoint);
-		OnHealthUpdate();
-	}
+	HealthPoint = FMath::Clamp(healthValue, 0.f, HealthPoint);
+	OnHealthUpdate();
 }
 
 void AYNFPPCharacter::SetCurrentScore(int32 NewScore)
@@ -120,10 +106,10 @@ void AYNFPPCharacter::BeginPlay()
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
 #endif
 
-	int32 ViewX, ViewY;
 	APlayerController* MyController = GetWorld()->GetFirstPlayerController();
 	if(MyController)
 	{
+		int32 ViewX, ViewY;
 		MyController->GetViewportSize(ViewX, ViewY);
 		TouchProcesser = FPlayerTouchProcesser(ViewX, ViewY);
 	}
@@ -218,16 +204,10 @@ void AYNFPPCharacter::Tick(float DeltaTime)
 
 		// 设置相机旋转角度
 		GetController()->SetControlRotation(CameraRotation);
-
-		// FPSCameraComponent->SetWorldRotation();
-
-		// FPSCameraComponent->AddLocalRotation(FPSMeshRotator);
 	}
 
 
 	TimeAgainstLastFire += DeltaTime;
-
-	// StartFire();
 
 	TryFire();
 
@@ -342,24 +322,6 @@ void AYNFPPCharacter::Fire_Implementation()
 
 void AYNFPPCharacter::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location)
 {
-	/*int32 ViewX, ViewY;
-	GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
-
-#if WITH_EDITOR
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TouchPosToString(Location.X, Location.Y));
-
-#endif
-	if (Location.X > (ViewX / 2))
-	{
-		bIsRotating = true;
-		PreviousLocation = Location;
-	}
-	else
-	{
-		bIsRotating = false;
-	}*/
-
 	TouchProcesser.FingerPressed(FingerIndex, Location);
 }
 
@@ -371,19 +333,6 @@ void AYNFPPCharacter::OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Loc
 
 void AYNFPPCharacter::OnTouchMoved(ETouchIndex::Type FingerIndex, FVector Location)
 {
-	//int32 ViewX, ViewY;
-	//GetWorld()->GetFirstPlayerController()->GetViewportSize(ViewX, ViewY);
-	//if (bIsRotating && (FingerIndex == ETouchIndex::Touch1 || FingerIndex == ETouchIndex::Touch2) && Location.X > (ViewX / 2))
-	//{
-	//	// 根据手指滑动的距离来旋转镜头
-	//	float DeltaX = Location.X - PreviousLocation.X;
-	//	AddControllerYawInput(DeltaX * Sensitivity);
-
-	//	float DeltaY = Location.Y - PreviousLocation.Y;
-	//	AddControllerPitchInput(DeltaY * Sensitivity);
-	//}
-	//PreviousLocation = Location;
-
 	FTouchResult Result = TouchProcesser.FingerMoved(FingerIndex, Location);
 
 	if(Result.DeltaX != 0.f)
